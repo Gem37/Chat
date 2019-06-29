@@ -1,6 +1,7 @@
 package chat;
 
 import java.net.*;
+import java.util.ArrayList;
 import java.io.*;
 
 public class Networking extends Thread {
@@ -8,6 +9,7 @@ public class Networking extends Thread {
 	public static DataOutputStream out;
 	public static DataInputStream in;
 	public static Socket client;
+	public static ArrayList<String> usersOnline = new ArrayList<String>();
 	
 	public Networking(int port, String serverName) {
 		try {
@@ -29,19 +31,45 @@ public class Networking extends Thread {
 	public void run() {
 		while(true) {
 			try {
-				System.out.println(in.readUTF());
+				String message = in.readUTF();
+				acceptMessage(message);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 	}
 	
-	public void sendMessage (String message) {
+	public static void sendMessage (String message) {
 		try {
 			out.writeUTF(message);
 			out.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void acceptMessage(String message) {
+		switch (message.substring(0, message.indexOf(" "))) {
+			case "@users":
+				updateUsers(message.substring(message.indexOf(" ") + 1));
+				
+				break;
+			
+			default:
+				
+				break;
+		}
+	}
+	
+	public static void updateUsers(String usersString) {
+		String[] usersSplit = usersString.split("   ");
+		
+		usersOnline.clear();
+		for(String user : usersSplit) {
+			usersOnline.add(user);
+		}
+		
+		System.out.println(usersOnline);
+		Window.updateList();
 	}
 }

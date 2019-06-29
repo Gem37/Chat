@@ -58,26 +58,42 @@ public class Server extends Thread {
 			while(true) {
 				try {
 					String message = user.in.readUTF();
-					if(user.username == null) {
+					System.out.println("Recieved Message: " + message);
+					if(user.username == null && ! message.equals("DISCONNECTING")) {
 						user.username = message;
+						
 						System.out.println(user.ip + " set their username to " + user.username);
 						
-						String usernames = "";
+						updateUsers();
+					} else if(message.equals("DISCONNECTING")) {
+						System.out.println(user.ip + " Ended Connection");
+						users.remove(user.ip);
 						
-						for(User u : users.values()) {
-							usernames = usernames + u.username + "   ";
-						}
-						
-						for(User u : users.values()) {
-							u.out.writeUTF("Users Online: " + usernames);
-						}
+						updateUsers();
+					 	
+						break;
 					} else {
-						
+						//Send message to other client
 					}
 				} catch (IOException e) {
 					break;
 				}
 			}
 		}
+	}
+	
+	public void updateUsers() throws IOException {
+		String usernames = "";
+		
+		for(User u : users.values()) {
+			usernames = usernames + u.username + "   ";
+		}
+		for(User u : users.values()) {
+			u.out.writeUTF("@users " + usernames);
+			u.out.flush();
+		}
+		System.out.println("Sent Users Update");
+		
+		System.out.println(usernames);
 	}
 }
